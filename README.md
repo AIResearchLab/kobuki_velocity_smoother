@@ -1,5 +1,7 @@
 # Kobuki Velocity Smoother
 
+This repository is an extention of the original [repository](https://github.com/kobuki-base/kobuki_velocity_smoother) that combines all active public forks.
+
 [[About](#about)][[Parameters](#parameters)][[Topics](#topics)][[Usage](#usage)][[Feedback](#feedback)]
 
 ## About
