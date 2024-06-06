@@ -52,6 +52,10 @@ VelocitySmoother::VelocitySmoother(const rclcpp::NodeOptions & options)
   pr_next_(0)
 {
   double frequency = this->declare_parameter("frequency", 20.0);
+  std::string vel_input =  this->declare_parameter<std::string>("vel_input", "cmd_vel_nav");
+  std::string vel_output = this->declare_parameter<std::string>("vel_output", "cmd_vel");
+  std::string odom_feedback = this->declare_parameter<std::string>("odom_feedback", "odom");
+  std::string command_feedback = this->declare_parameter<std::string>("command_feedback", "cmd_vel");
   this->declare_parameter("quiet", false);
   this->declare_parameter("decel_factor", 1.0);
   int feedback = this->declare_parameter("feedback", static_cast<int>(NONE));
@@ -73,15 +77,15 @@ VelocitySmoother::VelocitySmoother(const rclcpp::NodeOptions & options)
 
   // Publishers and subscribers
   odometry_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
-    "~/feedback/odometry", rclcpp::QoS(1),
+    odom_feedback, rclcpp::QoS(1),
     std::bind(&VelocitySmoother::odometryCB, this, std::placeholders::_1));
   current_vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
-    "~/feedback/cmd_vel", rclcpp::QoS(1),
+    command_feedback, rclcpp::QoS(1),
     std::bind(&VelocitySmoother::robotVelCB, this, std::placeholders::_1));
   raw_in_vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
-    "~/input", rclcpp::QoS(1),
+    vel_input, rclcpp::QoS(1),
     std::bind(&VelocitySmoother::velocityCB, this, std::placeholders::_1));
-  smooth_vel_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("~/smoothed", 1);
+  smooth_vel_pub_ = this->create_publisher<geometry_msgs::msg::Twist>(vel_output, 1);
 
   period_ = 1.0 / frequency;
   timer_ = this->create_wall_timer(
@@ -161,7 +165,7 @@ void VelocitySmoother::timerCB()
 
   if ((input_active_ == true) && (cb_avg_time_ > 0.0) &&
     ((this->get_clock()->now() - last_velocity_cb_time_).seconds() >
-    std::min(3.0 * cb_avg_time_, 0.5)))
+    std::min(2000.0 * cb_avg_time_, 1.5)))
   {
     // Velocity input not active anymore; normally last command is a zero-velocity one, but reassure
     // this, just in case something went wrong with our input, or he just forgot good manners...
@@ -172,10 +176,11 @@ void VelocitySmoother::timerCB()
     if (target_vel_.linear.x != 0.0 || target_vel_.angular.z != 0.0) {
       RCLCPP_WARN(
         get_logger(),
-        "Velocity Smoother : input went inactive leaving us a non-zero target velocity (%f, %f),"
+        "Velocity Smoother : input went inactive leaving us a non-zero target velocity (%f, %f), %f"
         " zeroing...",
         target_vel_.linear.x,
-        target_vel_.angular.z);
+        target_vel_.angular.z,
+        20.0 * cb_avg_time_);
       target_vel_ = geometry_msgs::msg::Twist();
     }
   }
@@ -199,7 +204,7 @@ void VelocitySmoother::timerCB()
 
   // 5 missing msgs
   if ((feedback_ != NONE) && (input_active_ == true) && (cb_avg_time_ > 0.0) &&
-    (((this->get_clock()->now() - last_velocity_cb_time_).seconds() > 5.0 * cb_avg_time_) ||
+    (((this->get_clock()->now() - last_velocity_cb_time_).seconds() > 5000.0 * cb_avg_time_) ||
     v_different_from_feedback || w_different_from_feedback))
   {
     // If the publisher has been inactive for a while, or if our current commanding differs a lot

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(kobuki_velocity_smoother)
 
-find_package(ament_cmake_ros REQUIRED)
+find_package(ament_cmake REQUIRED)
 find_package(ecl_build REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)

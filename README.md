@@ -47,3 +47,13 @@ There are some reasons to use robot feedback. The two most frequently faced:
 
 * Multiple controllers compete for controlling the robot via a multiplexer. A controller that has been excluded by another with higher priority may suddenly issue commands significantly different to the last commanded velocity when the multiplexer has switched back to it. i.e. the commanded velocity profile experiences a large, discrete jump. In these cases, option 2 is very useful.
 * The robot fails to generate the commanded velocity due to, for example, unmodelled inclines, carpets etc. In these cases, option 1 is very useful.
+
+
+<br>
+
+## Merged forks
+
+|Version | Fork                                                                                             | Merged | Tested |
+|:---:	 |---	                                                                                            |:---:   |:---:	  |
+|0.1.0 	 | [Sirius-OIT/kobuki_velocity_smoother](https://github.com/Sirius-OIT/kobuki_velocity_smoother)  	|&#9745; |&#9745; |
+|0.1.0 	 | [bot-lin/kobuki_velocity_smoother](https://github.com/bot-lin/kobuki_velocity_smoother)  	    |&#9745; |&#9745; |
